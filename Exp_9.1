@@ -1,0 +1,43 @@
+1. Multi-Stage Dockerfile for React
+
+# Stage 1: Build React app
+FROM node:18 AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Stage 2: Serve with Nginx
+FROM nginx:stable-alpine
+WORKDIR /usr/share/nginx/html
+COPY --from=build /app/build .
+# Nginx configuration (optional)
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+The first stage uses Node.js to install dependencies and build the React app.
+
+The second stage uses Nginx to serve the optimized build output.
+
+Result: final image is much smaller and doesn't include any dev dependencies.​
+
+2. .dockerignore
+Create a .dockerignore file in your React app's root directory:
+
+
+node_modules
+build
+Dockerfile
+.dockerignore
+.git
+.gitignore
+README.md
+Excluding these files ensures your image build context stays clean and light.​
+
+3. Build and Run Docker Image
+
+# Build the image
+docker build -t react-nginx-app .
+
+# Run the container
+docker run -p 80:80 react-nginx-app
